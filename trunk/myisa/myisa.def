@@ -1,0 +1,170 @@
+/*
+  These are defined in myisa.h
+
+#define RS              ((inst >> 16) & 0x1f)
+#define RT              ((inst >> 11) & 0x1f)   
+#define RD              ((inst >> 21) & 0x1f)
+
+#define IMME            (inst & 0xffff)
+*/
+
+/*
+DEFLINK(ALUREG_LINK, 0x00, "alureg_link", 0, 0x3f)
+*/
+
+#define ADD_IMPL							\
+  {									\
+	SET_GPR(RD,GPR(RS)+GPR(RT));					\
+  }
+DEFINST(ADD,			0x00,
+	"add",			"",
+	NA,			F_TRAP,
+	DNA, DNA, DNA,		DNA, DNA, DNA, DNA)
+
+#define ADDI_IMPL							\
+  {									\
+	SET_GPR(RT,GPR(RS)+IMME);					\
+  }
+DEFINST(ADDI,			0x01,
+	"addi",			"",
+	NA,			F_TRAP,
+	DNA, DNA, DNA,		DNA, DNA, DNA, DNA)
+
+#define SUB_IMPL							\
+  {									\
+	SET_GPR(RD,GPR(RS)-GPR(RT));					\
+  }
+DEFINST(SUB,			0x02,
+	"sub",			"",
+	NA,			F_TRAP,
+	DNA, DNA, DNA,		DNA, DNA, DNA, DNA)
+
+
+#define MULT_IMPL							\
+  {									\
+	SET_GPR(RD,GPR(RS)*GPR(RT));					\
+  }
+DEFINST(MULT,			0x03,
+	"mult",			"",
+	NA,			F_TRAP,
+	DNA, DNA, DNA,		DNA, DNA, DNA, DNA)
+
+#define LW_IMPL								\
+  {									\
+	enum md_fault_type _fault;					\
+	word_t _result;							\
+									\
+	_result = READ_WORD(GPR(RS)+OFFSET,_fault );			\
+	if(_fault != md_fault_none)					\
+		DECLARE_FAULT(_fault);					\
+	SET_GPR(RT, _result);						\
+  }
+DEFINST(LW,			0x04,
+	"lw",			"",
+	NA,			F_TRAP,
+	DNA, DNA, DNA,		DNA, DNA, DNA, DNA)
+
+#define SW_IMPL								\
+  {									\
+	enum md_fault_type _fault;					\
+									\
+	WRITE_WORD(GPR(RT),GPR(RS)+OFFSET,_fault );			\
+	if(_fault != md_fault_none)					\
+		DECLARE_FAULT(_fault);					\
+  }
+DEFINST(SW,			0x05,
+	"sw",			"",
+	NA,			F_TRAP,
+	DNA, DNA, DNA,		DNA, DNA, DNA, DNA)
+
+#define SLET_IMPL						\
+  {						\
+	if(GPR(RS) <= GPR(RT))						\
+		SET_GPR(RD, 1);					\
+	else SET_GPR(RD, 0);						\
+  }
+DEFINST(SLET,			0x06,
+	"slet",			"",
+	NA,			F_TRAP,
+	DNA, DNA, DNA,		DNA, DNA, DNA, DNA)
+
+#define BEQZ_IMPL				\
+{					\
+	if(GPR(RS) == 0)						\
+		SET_NPC(BEQZ_ADDR << 2);					\
+}
+DEFINST(BEQZ,			0x07,
+	"beqz",			"",
+	NA,			F_TRAP,
+	DNA, DNA, DNA,		DNA, DNA, DNA, DNA)
+
+#define JUMP_IMPL			\
+{			\
+	SET_NPC(JUMP_ADDR << 2);		\
+}
+DEFINST(JUMP,			0x08,
+	"jump",			"",
+	NA,			F_TRAP,
+	DNA, DNA, DNA,		DNA, DNA, DNA, DNA)
+
+#define LWR_IMPL						\
+  {						\
+	enum md_fault_type _fault;					\
+	word_t _result;							\
+									\
+	_result = READ_WORD(GPR(RS)+GPR(RT),_fault );			\
+	if(_fault != md_fault_none)					\
+		DECLARE_FAULT(_fault);					\
+	SET_GPR(RD, _result);						\
+  }
+DEFINST(LWR,			0x09,
+	"lwr",			"",
+	NA,			F_TRAP,
+	DNA, DNA, DNA,		DNA, DNA, DNA, DNA)
+	
+#define SWR_IMPL						\
+  {						\
+	enum md_fault_type _fault;					\
+									\
+	WRITE_WORD(GPR(RD),GPR(RS)+GPR(RT),_fault );			\
+	if(_fault != md_fault_none)					\
+		DECLARE_FAULT(_fault);					\
+  }
+DEFINST(SWR,			0x0a,
+	"swr",			"",
+	NA,			F_TRAP,
+	DNA, DNA, DNA,		DNA, DNA, DNA, DNA)
+
+#define SWI_IMPL							\
+  {									\
+	SYSCALL(inst);							\
+  }
+DEFINST(SWI,			0x3f,
+	"swi",			"",
+	NA,			F_TRAP,
+	DNA, DNA, DNA,		DNA, DNA, DNA, DNA)
+
+/*
+CONNECT(ALUREG_LINK)
+#define ADD_IMPL							\
+  {									\
+	SET_GPR(RD,GPR(RS)+GPR(RT));					\
+  }
+DEFINST(ADD,			0x20,
+	"add",			"",
+	IntALU,			F_ICOMP,
+	DNA,DNA,DNA,		DNA,DNA,DNA,DNA)
+*/
+
+#undef ADD_IMPL
+#undef ADDI_IMPL
+#undef LW_IMPL
+#undef SW_IMPL
+#undef SWP_IMPL
+#undef SWI_IMPL
+/*#undef ADD_IMPL*/
+
+#undef DEFINST
+#undef DEFLINK
+#undef CONNECT
+#undef DEFUOP
